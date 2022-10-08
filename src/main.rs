@@ -72,12 +72,14 @@ fn size_1() {
     //add switch here later //let out_length = if  { }
     let out_length = 5; //temp bc output should always be 5 for now:"00:00"
     let out_height = 1;
+    let x_shift = 1;
+    let y_shift = 1;
     //align the text to the middle of the window
-    let screen = termion::terminal_size().expect("couldnt get terminal size");
+    let screen_size = termion::terminal_size().expect("couldnt get terminal size");
     //bit shift to half value,- half of the len of horizontal text size. for x align
-    let x_alignment = ((screen.0) >> 1) - ((out_length) >> 1);
+    let x_alignment = (((screen_size.0) >> 1) - ((out_length) >> 1)) + x_shift;
     //bit shift to half value,- half of the len of vertical text size. for y align
-    let y_alignment = ((screen.1) >> 1) - ((out_height) >> 1);
+    let y_alignment = (((screen_size.1) >> 1) - ((out_height) >> 1)) + y_shift;
 
     fn initial_alignment(x_alignment: u16, y_alignment: u16) {
         print! {"{goto}",goto = termion::cursor::Goto(x_alignment, y_alignment)}
