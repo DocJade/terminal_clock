@@ -10,3 +10,4 @@ chrono = "0.4.22"
 clap = { version = "4.0.10", features = [ "derive" ]}
 no-panic = "0.1.16"
 termion = "1.5.6"
+ctrlc = "3.2.3"
