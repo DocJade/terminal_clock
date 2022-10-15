@@ -42,7 +42,8 @@ fn main() {
     .expect("Error setting Ctrl-C handler");
 
     let args = Cli::parse();
-    if ((&args.size as &u8) > &5) | ((&args.size as &u8) < &1) {
+    if ((args.size) > 5) | ((args.size) < 1) {
+        //size check
         println!("Clock size can only be between 1 and 5!");
         exit(1)
     }
@@ -52,62 +53,107 @@ fn main() {
     sleep(time::Duration::from_secs(1));
     println!("{}", termion::clear::All);
 
-    //enter the loop depending on size
-    match &args.size {
-        1 => size_1(),
-        2 => println!("not implemented"),
-        3 => println!("not implemented"),
-        4 => println!("not implemented"),
-        5 => println!("not implemented"),
-        _ => {
-            println!("{} is an invalid size!", &args.size)
-        } //catch all no op.
-    }
+    //heres our graphics
+                        //[string, 0-9:, height]
+    const CHAR_SIZE_1:[[&str; 11]; 1] = [
+        ["0","1","2","3","4","5","6","7","8","9",":"]
+    ];
+    const CHAR_SIZE_2:[[&str; 11]; 2] = [
+        ["  "," |"," ]"," ]","|+","[ ","| ","-+","[]","[]"," ."],
+        ["[]"," |","[ "," ]"," |"," ]","[]"," |","[]"," |"," ."]
+    ];
+    const CHAR_SIZE_3:[[&str; 11]; 3] = [
+        [" _ ","   "," _ "," _ ","   "," _ "," _ "," _ "," _ "," _ ","   "],
+        ["| |","  |"," _|"," _|","|_|","|_ ","|_ ","  |","|_|","|_|"," _ "],
+        ["|_|","  |","|_ "," _|","  |"," _|","|_|","  |","|_|"," _|"," _ "]
+    ];
 
-    exit(1) //if you somehow got here something is wrong
-}
-//this feels dumb but i dont know how else to do it yet
 
-fn size_1() {
-    //add switch here later //let out_length = if  { }
-    let out_length = 5; //temp bc output should always be 5 for now:"00:00"
-    let out_height = 1;
-    let x_shift = 1;
-    let y_shift = 1;
-    //align the text to the middle of the window
-    let screen_size = termion::terminal_size().expect("couldnt get terminal size");
+    //initialize variables for math stuffs
+    //set size of chars
+    let size:u16 = args.size.into();
+    let total_len: u16 = &size * 5; //output is 5 digits including the colon
+    //set the draw location's top left
+    //shift values for alignment
+    let x_shift = 0;
+    let y_shift = &size;
+    //get screen size
+    let screen_size:(u16,u16) = termion::terminal_size().expect("couldnt get terminal size");
     //bit shift to half value,- half of the len of horizontal text size. for x align
-    let x_alignment = (((screen_size.0) >> 1) - ((out_length) >> 1)) + x_shift;
+    let x_alignment = (((screen_size.0) >> 1) - ((total_len) >> 1)) + x_shift;
     //bit shift to half value,- half of the len of vertical text size. for y align
-    let y_alignment = (((screen_size.1) >> 1) - ((out_height) >> 1)) + y_shift;
+    let y_alignment = (((screen_size.1) >> 1) - ((total_len) >> 1)) + y_shift;
 
-    fn initial_alignment(x_alignment: u16, y_alignment: u16) {
-        print! {"{goto}",goto = termion::cursor::Goto(x_alignment, y_alignment)}
+    let realign = |vert:usize| {
+        print! {"{goto}", goto = termion::cursor::Goto(x_alignment, y_alignment + vert as u16)}
+    };
+
+    //load the correct size into our charset
+    /*
+    let char_set =
+    match &size {
+        1 => {char_set[0].copy_from_slice(CHAR_SIZE_1)}
+        2 => {CHAR_SIZE_2}
+        3 => {CHAR_SIZE_3}
+        x => {unreachable!("we shouldnt be able to match against anything other than 1-5")}
+    };
+    */
+
+    //what id like to do is to copy the character set into an array once to avoid using a match
+    //every loop, but i couldnt figure it out :(
+
+    fn get_string_from_charset (row:usize, array_index:usize, size:i32) -> &'static str {
+        if size == 1 {
+            return CHAR_SIZE_1[array_index][row]
+        }
+        if size == 2 {
+            return CHAR_SIZE_2[array_index][row]
+        }
+        if size == 3 {
+            CHAR_SIZE_3[array_index][row]
+        }
+        else { panic!("size has no charset") }
     }
 
-    fn print_time() {
-        //get the time
-        let now = Local::now();
-        //print time
-        println!(
-            "{hour:02}:{minute:02}",
-            hour = now.hour(),
-            minute = now.minute()
-        );
-        //todo add second support with switch
-        //this is the simplest version. just a print command
-    }
-
-    //finally lets start displaying the time
-    //hide cursor
-    print!("{}", termion::cursor::Hide);
-    initial_alignment(x_alignment, y_alignment);
+    //now we loop
+    //is drawin' time
     loop {
-        //print
-        print_time();
-        //realign
-        initial_alignment(x_alignment, y_alignment);
-        //now wait till next update
-        sleep(time::Duration::from_millis(1000)); //todo make this change based on seconds flag
+        //reset row_iter
+        let mut row_iter:usize = 0;
+        //get the time and throw it into a string
+        let now = Local::now();
+        let time_str:String=format!("{h:0>2}{m:0>2}",h=now.hour(),m=now.minute());
+        //if the time is 21:12 the string will read 2112
+        //now here's some goofy code
+        //set the numbers
+        //time number 0
+        let tn0:usize=time_str.chars().next().unwrap().to_digit(10).unwrap() as usize;
+        let tn1:usize=time_str.chars().nth(1).unwrap().to_digit(10).unwrap() as usize;
+        let tn2:usize=time_str.chars().nth(2).unwrap().to_digit(10).unwrap() as usize;
+        let tn3:usize=time_str.chars().nth(3).unwrap().to_digit(10).unwrap() as usize;
+        //draw the rows
+        loop{
+            //first we must realign
+            realign(row_iter + size as usize);
+            //then print the line
+            //hours
+            print!("{}",get_string_from_charset(tn0, row_iter, size as i32));
+            print!("{}",get_string_from_charset(tn1, row_iter, size as i32));
+            //colon
+            print!("{}",get_string_from_charset(10, row_iter, size as i32));
+            //minutes
+            print!("{}",get_string_from_charset(tn2, row_iter, size as i32));
+            print!("{}",get_string_from_charset(tn3, row_iter, size as i32));
+            //check if we've drawn all the rows, else increment loop count.
+            row_iter +=1;
+            if row_iter >= size as usize {break}
+
+        }
+        //print a line so the text will actually appear
+        println!();
+        //now we sleep
+        sleep(time::Duration::from_millis(1000));
+
     }
+    //if you somehow got here something is VERY wrong
 }
