@@ -135,30 +135,25 @@ fn main() {
     loop {
         //reset row_iter
         let mut row_iter: usize = 0;
-        //get the time and throw it into a string
         let now = Local::now();
-        let time_str: String = format!("{h:0>2}{m:0>2}", h = now.hour(), m = now.minute());
-        //if the time is 21:12 the string will read 2112
-        //now here's some goofy code
         //set the numbers
-        //time number 0
-        let tn0: usize = time_str.chars().next().unwrap().to_digit(10).unwrap() as usize;
-        let tn1: usize = time_str.chars().nth(1).unwrap().to_digit(10).unwrap() as usize;
-        let tn2: usize = time_str.chars().nth(2).unwrap().to_digit(10).unwrap() as usize;
-        let tn3: usize = time_str.chars().nth(3).unwrap().to_digit(10).unwrap() as usize;
+        let hour_tens:      usize = (now.hour() / 10) as usize;
+        let hour_ones:      usize = (now.hour() % 10) as usize;
+        let minute_tens:    usize = (now.minute() / 10) as usize;
+        let minute_ones:    usize = (now.minute() % 10) as usize;
         //draw the rows
         loop {
             //first we must realign
             realign(row_iter + size as usize);
             //then print the line
             //hours
-            print!("{}", get_string_from_charset(tn0, row_iter, size as i32));
-            print!("{}", get_string_from_charset(tn1, row_iter, size as i32));
+            print!("{}", get_string_from_charset(hour_tens, row_iter, size as i32));
+            print!("{}", get_string_from_charset(hour_ones, row_iter, size as i32));
             //colon
             print!("{}", get_string_from_charset(10, row_iter, size as i32));
             //minutes
-            print!("{}", get_string_from_charset(tn2, row_iter, size as i32));
-            print!("{}", get_string_from_charset(tn3, row_iter, size as i32));
+            print!("{}", get_string_from_charset(minute_tens, row_iter, size as i32));
+            print!("{}", get_string_from_charset(minute_ones, row_iter, size as i32));
             //check if we've drawn all the rows, else increment loop count.
             row_iter += 1;
             if row_iter >= size as usize {
