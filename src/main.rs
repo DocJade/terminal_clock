@@ -136,7 +136,7 @@ fn main() {
         //reset row_iter
         let mut row_iter: usize = 0;
         let now = Local::now();
-        //set the numbers
+        //set the number
         let hour_tens:      usize = (now.hour() / 10) as usize;
         let hour_ones:      usize = (now.hour() % 10) as usize;
         let minute_tens:    usize = (now.minute() / 10) as usize;
