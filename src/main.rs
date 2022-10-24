@@ -52,30 +52,61 @@ fn main() {
 
     //here's our graphics
     // [string, 0-9:, height]
-    const CHAR_SIZE_1: [[&str; 11]; 1] = [
-        ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":"]
-    ];
+    const CHAR_SIZE_1: [[&str; 11]; 1] = [["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":"]];
     const CHAR_SIZE_2: [[&str; 11]; 2] = [
-        ["  ", " |", " ]", " ]", "|+", "[ ", "| ", "-+", "[]", "[]", " .", ],
-        ["[]", " |", "[ ", " ]", " |", " ]", "[]", " |", "[]", " |", " .", ],
+        [
+            "  ", " |", " ]", " ]", "|+", "[ ", "| ", "-+", "[]", "[]", " .",
+        ],
+        [
+            "[]", " |", "[ ", " ]", " |", " ]", "[]", " |", "[]", " |", " .",
+        ],
     ];
     const CHAR_SIZE_3: [[&str; 11]; 3] = [
-        [" _ ", "   ", " _ ", " _ ", "   ", " _ ", " _ ", " _ ", " _ ", " _ ", "   ", ],
-        ["| |", "  |", " _|", " _|", "|_|", "|_ ", "|_ ", "  |", "|_|", "|_|", " _ ", ],
-        ["|_|", "  |", "|_ ", " _|", "  |", " _|", "|_|", "  |", "|_|", " _|", " _ ", ],
+        [
+            " _ ", "   ", " _ ", " _ ", "   ", " _ ", " _ ", " _ ", " _ ", " _ ", "   ",
+        ],
+        [
+            "| |", "  |", " _|", " _|", "|_|", "|_ ", "|_ ", "  |", "|_|", "|_|", " _ ",
+        ],
+        [
+            "|_|", "  |", "|_ ", " _|", "  |", " _|", "|_|", "  |", "|_|", " _|", " _ ",
+        ],
     ];
     const CHAR_SIZE_4: [[&str; 11]; 4] = [
-        [" __ ", "    ", " __ ", " __ ", "    ", " __ ", " __ ", " __ ", " __ ", " __ ", "    ", ],
-        ["|  |", "   |", "   |", "   |", "|  |", "|   ", "|   ", "   |", "|  |", "|  |", "  | ", ],
-        ["|  |", "   |", "|--|", " --|", "|--|", "|--|", "|--|", "   |", "|--|", "|--|", "    ", ],
-        ["|__|", "   |", "|__ ", " __|", "   |", " __|", "|__|", "   |", "|__|", " __|", "  | ", ],
+        [
+            " __ ", "    ", " __ ", " __ ", "    ", " __ ", " __ ", " __ ", " __ ", " __ ", "    ",
+        ],
+        [
+            "|  |", "   |", "   |", "   |", "|  |", "|   ", "|   ", "   |", "|  |", "|  |", "  | ",
+        ],
+        [
+            "|  |", "   |", "|--|", " --|", "|--|", "|--|", "|--|", "   |", "|--|", "|--|", "    ",
+        ],
+        [
+            "|__|", "   |", "|__ ", " __|", "   |", " __|", "|__|", "   |", "|__|", " __|", "  | ",
+        ],
     ];
     const CHAR_SIZE_5: [[&str; 11]; 5] = [
-        [" ___ ", "     ", " ___ ", "___ ", "     ", " ___ ", " ___ ", " ___ ", " ___ ", " ___ ", "     ", ],
-        ["|   |", "    |", "    |", "   |", "|   |", "|    ", "|    ", "    |", "|   |", "|   |", "     ", ],
-        ["|   |", "    |", " ___|", "___|", "|___|", "|___ ", "|___ ", "    |", "|___|", "|___|", "  |  ", ],
-        ["|   |", "    |", "|    ", "   |", "    |", "    |", "|   |", "    |", "|   |", "    |", "     ", ],
-        ["|___|", "    |", "|___ ", "___|", "    |", " ___|", "|___|", "    |", "|___|", " ___|", "  |  ", ],
+        [
+            " ___ ", "     ", " ___ ", "___ ", "     ", " ___ ", " ___ ", " ___ ", " ___ ",
+            " ___ ", "     ",
+        ],
+        [
+            "|   |", "    |", "    |", "   |", "|   |", "|    ", "|    ", "    |", "|   |",
+            "|   |", "     ",
+        ],
+        [
+            "|   |", "    |", " ___|", "___|", "|___|", "|___ ", "|___ ", "    |", "|___|",
+            "|___|", "  |  ",
+        ],
+        [
+            "|   |", "    |", "|    ", "   |", "    |", "    |", "|   |", "    |", "|   |",
+            "    |", "     ",
+        ],
+        [
+            "|___|", "    |", "|___ ", "___|", "    |", " ___|", "|___|", "    |", "|___|",
+            " ___|", "  |  ",
+        ],
     ];
 
     //initialize variables for math stuffs
@@ -136,24 +167,36 @@ fn main() {
         //reset row_iter
         let mut row_iter: usize = 0;
         let now = Local::now();
-        //set the number
-        let hour_tens:      usize = (now.hour() / 10) as usize;
-        let hour_ones:      usize = (now.hour() % 10) as usize;
-        let minute_tens:    usize = (now.minute() / 10) as usize;
-        let minute_ones:    usize = (now.minute() % 10) as usize;
+        //set the numbers
+        let hour_tens: usize = (now.hour() / 10) as usize;
+        let hour_ones: usize = (now.hour() % 10) as usize;
+        let minute_tens: usize = (now.minute() / 10) as usize;
+        let minute_ones: usize = (now.minute() % 10) as usize;
         //draw the rows
         loop {
             //first we must realign
             realign(row_iter + size as usize);
             //then print the line
             //hours
-            print!("{}", get_string_from_charset(hour_tens, row_iter, size as i32));
-            print!("{}", get_string_from_charset(hour_ones, row_iter, size as i32));
+            print!(
+                "{}",
+                get_string_from_charset(hour_tens, row_iter, size as i32)
+            );
+            print!(
+                "{}",
+                get_string_from_charset(hour_ones, row_iter, size as i32)
+            );
             //colon
             print!("{}", get_string_from_charset(10, row_iter, size as i32));
             //minutes
-            print!("{}", get_string_from_charset(minute_tens, row_iter, size as i32));
-            print!("{}", get_string_from_charset(minute_ones, row_iter, size as i32));
+            print!(
+                "{}",
+                get_string_from_charset(minute_tens, row_iter, size as i32)
+            );
+            print!(
+                "{}",
+                get_string_from_charset(minute_ones, row_iter, size as i32)
+            );
             //check if we've drawn all the rows, else increment loop count.
             row_iter += 1;
             if row_iter >= size as usize {
