@@ -1,3 +1,13 @@
+#![warn(
+clippy::pedantic,
+clippy::nursery,
+clippy::unwrap_used,
+clippy::expect_used,
+clippy::correctness,
+clippy::style,
+clippy::perf,
+)]
+
 use chrono::{Local, Timelike};
 use clap::Parser;
 use std::process::exit;
@@ -85,35 +95,56 @@ const CHAR_SIZE_5: [[&str; 11]; 5] = [
 
 //what id like to do is to copy the character set into an array once to avoid using a match
 //every loop, but i couldnt figure it out :(
-fn get_string_from_charset(row: usize, array_index: usize, size: i32) -> &'static str {
+fn get_string_from_charset(row: usize, array_index: u16, size: i32) -> &'static str {
     if size == 1 {
-        return CHAR_SIZE_1[array_index][row];
+        return CHAR_SIZE_1[array_index as usize][row];
     }
     if size == 2 {
-        return CHAR_SIZE_2[array_index][row];
+        return CHAR_SIZE_2[array_index as usize][row];
     }
     if size == 3 {
-        return CHAR_SIZE_3[array_index][row];
+        return CHAR_SIZE_3[array_index as usize][row];
     }
     if size == 4 {
-        return CHAR_SIZE_4[array_index][row];
+        return CHAR_SIZE_4[array_index as usize][row];
     }
     if size == 5 {
-        CHAR_SIZE_5[array_index][row]
+        CHAR_SIZE_5[array_index as usize][row]
     } else {
         panic!("This should be impossible to reach!");
     }
 }
 
+fn realign(x_alignment: u16,y_alignment: u16,vert: u16) {
+    print!(
+        "{goto}",
+        goto = termion::cursor::Goto(
+            x_alignment,
+            y_alignment + vert)
+    );
+}
+
+fn get_terminal_size() -> (u16, u16) {
+    if let Ok(output) = termion::terminal_size(){
+        //value is safe, return
+        output
+    }else {
+        //value isn't safe! lets get outta here!
+        panic!("Couldn't get terminal size!")
+    }
+}
+
 fn main() {
-    ctrlc::set_handler(move || {
+    match ctrlc::set_handler(move || {
         //user wants to quit!
         //fix cursor
         println!("{}", termion::cursor::Show);
         //now exit.
         exit(0);
-    })
-    .expect("Error setting Ctrl-C handler");
+    }) {
+        Ok(_ok) => {}
+        Err(error) => {panic!("Unable to set ctrl + c handler! : {}", error)}
+    }
 
     let args = Cli::parse();
     if ((args.size) > 5) | ((args.size) < 1) {
@@ -121,6 +152,8 @@ fn main() {
         println!("Clock size can only be between 1 and 5!");
         exit(1)
     }
+    assert!(args.size <= 5);
+    assert!(args.size >= 1);
     //blank out the terminal
     println!("{}", termion::clear::All);
     //initialize variables for screen alignment
@@ -130,27 +163,19 @@ fn main() {
     let x_shift = 0;    //set the draw location's top left
     let y_shift = &size;    //shift values for alignment
     //get screen size
-    let screen_size: (u16, u16) = termion::terminal_size().expect("couldnt get terminal size");
+    let screen_size: (u16, u16) = get_terminal_size();
     //bit shift to half value,- half of the len of horizontal text size. for x align
     let x_alignment = (((screen_size.0) >> 1) - ((total_len) >> 1)) + x_shift;
     //bit shift to half value,- half of the len of vertical text size. for y align
     let y_alignment = (((screen_size.1) >> 1) - ((total_len) >> 1)) + y_shift;
 
-    let realign = |vert: usize| {
-        print!(
-            "{goto}",
-            goto = termion::cursor::Goto(
-                x_alignment,
-                y_alignment + <usize as std::convert::TryInto<u16>>::try_into(vert).unwrap()
-            )
-        );
-    };
+
 
     //is drawin' time
     //now we loop
     loop {
         //reset row_iter
-        let mut row_iter: usize = 0;
+        let mut row_iter: u16 = 0;
         //get the time
         let now = Local::now();
         //set the numbers
@@ -161,7 +186,7 @@ fn main() {
         //draw the rows
         loop {
             //first we must realign
-            realign(row_iter + size as usize);
+            realign(x_alignment,y_alignment,row_iter + size);
             //then print the line
             //hours
             //tens
@@ -189,7 +214,7 @@ fn main() {
             );
             row_iter += 1;
             //check if we've drawn all the rows
-            if row_iter >= size as usize {
+            if row_iter >= size {
                 //done drawing time
                 break;
             }
